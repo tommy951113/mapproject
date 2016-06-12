@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+    <title>交大测绘学子地图</title>
+    <script src="../../arcgis_js_v316_api/arcgis_js_api/library/3.16/3.16/init.js"></script>
+	<script type="text/javascript" src="../login/js/jquery-1.9.0.min.js"></script>
+    <link rel="stylesheet" href="../../arcgis_js_v316_api/arcgis_js_api/library/3.16/3.16/esri/css/esri.css">
+	<style>
+		body{
+			margin:0px;
+			padding:0px;
+			width:100%;
+		}
+		#map{
+			width:90%;
+			height:100%;
+			float:left;
+		}
+		#toc{
+			width:10%;
+			float:left;
+			font-size:17px;
+			font-family:Corbel;
+		}
+	</style>
+	<script>
+		$(document).ready(function(){
+			$("body").css("height",window.innerHeight+"px");
+		});
+		
+		var map;
+		var visible=[];
+		var layer=[];
+		require([
+		"dojo/dom","dojo/on",
+		"esri/map","esri/layers/ArcGISDynamicMapServiceLayer","dojo/domReady!"],
+		function(dom,on,Map, ArcGISDynamicMapServiceLayer){
+			map = new Map("map");
+			layer = new ArcGISDynamicMapServiceLayer(									    "http://localhost:6080/arcgis/rest/services/USA/MapServer");
+			//layer.on("load",loadLayerList);
+			// dojo.connect(layer,"onLoad",loadLayerList);
+            map.addLayer(layer);
+			
+			function loadLayerList(layers)
+			{
+			//console.log(layers);
+				var html="";
+				var infos=layers.layerInfos;
+				//console.log(infos);
+				//获取图层的信息
+				for(var i =0;i<infos.length;i++){
+					var info=infos[i];
+					if(info.defaultVisibility){
+						visible.push(info.id);
+					}
+					//输出图层列表的html
+					html=html+"<div><input id='"+info.id+"' name='layerList' class='listCss' type='checkbox' value='checkbox' "+( info.defaultVisibility?"checked":"")+"/>"+info.name+"</div>";
+					dom.byId("'"+info.id+"'").on("click",setLayerVisibility);
+				}
+				//设置可见图层
+				layer.setVisibleLayers(visible);
+				console.log(html);
+				//dom.byId("toc").innerHTML="aaaaaaaaaaaa";
+				dom.byId("toc").innerHTML=html;
+				
+			}
+			
+			function setLayerVisibility(){
+					var inputs= dojo.query(".listCss");
+					visible=[];
+					for(var i=0;i<inputs.length;i++){
+						if(inputs[i].checked){
+							visible.push(inputs[i].id);
+							}
+					}
+					layer.setVisibleLayers(visible);
+			}
+			});
+	</script>
+</head>
+	<body>
+		<div id="map"></div>
+        <div id="toc">
+        </div>
+	</body>
+</html>

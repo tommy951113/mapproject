@@ -1,0 +1,66 @@
+@charset "utf-8";
+/* this is used with the 'mediaquery.html' page to see media queries in effect. Reference this CSS file on a blank page and then resize the browser window */
+
+
+#pagewrap {
+	background: url("images/bg.jpg") no-repeat top left;
+	width: 820px;
+	height: 600px;
+	margin: 0 auto;
+	padding: 0 100px;
+}
+#ownerName{background: transparent;
+	border: 2px solid #999;
+	margin-bottom: 12px;
+	border-radius:10px;
+	
+	}
+.LOGO{
+	background-image:url(image/Orange.png);
+	height: 100px;
+	margin: 0 auto;
+	padding: 0 0px;
+	border:none;
+	z-index:-1;
+	border-radius:10px 10px 0px 0px;
+	}
+#AttributeTable{
+	position: absolute;
+	top: 98px;
+	right: 22px;
+	background-color: #FFFFFF;
+	z-index: -1;
+	border-radius: 0px 0px 10px 0;
+	}
+
+#info {
+      bottom: 20px;
+      color: #444;
+      height: auto;
+      font-family: arial;
+      left: 20px;
+      margin: 5px;
+      padding: 10px;
+      position: absolute;
+      text-align: left;
+      width: 200px;
+      z-index: 40;
+    }
+    .label {
+      display: inline-block;
+      width: 4em;
+    }
+    #title{
+	font-family: "楷体";
+	font-size: 60px;
+	color: #ffffff;
+	width: 912px;
+
+    }
+	#toc{
+		width:75px;
+	}
+	select{
+		margin-left:90%;
+		margin-top:15px;
+	}
