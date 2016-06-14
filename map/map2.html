@@ -4,238 +4,41 @@
 <meta charset="utf-8">
 <title>交大测绘学子地图</title>
  <script src="../../arcgis_js_v316_api/arcgis_js_api/library/3.16/3.16/init.js"></script>
-	<script type="text/javascript" src="../login/js/jquery-1.9.0.min.js"></script>
+	<script src="../login/js/jquery-1.9.0.min.js"></script>
+	<link rel="stylesheet" href="../../arcgis_js_v316_api/arcgis_js_api/library/3.16/3.16/dijit/themes/dijit.css">
     <link rel="stylesheet" href="../../arcgis_js_v316_api/arcgis_js_api/library/3.16/3.16/esri/css/esri.css">
 <link rel="stylesheet" type="text/css" href="style.css">
-<script>
-
-
-window.onload = function(){
-    function autosize(){
-    document.getElementById("map").style.height=document.documentElement.clientHeight-105+"px"; 
-    document.getElementById("map").style.width=document.documentElement.clientWidth*0.7+"px";
-	//document.getElementById("Toolbar2").style.width=document.documentElement.clientWidth*0.7+"px";
-    document.getElementById("AttributeTable").style.height=document.getElementById("map").style.height;
-    document.getElementById("AttributeTable").style.width=document.documentElement.clientWidth*0.3-6+"px";
-	
-}
-        autosize();
-        onresize=autosize; 
-};
-var provinces=new Array();	
-	  
-	  //jQuery代码
-		$(function(){
-			//alert($("#map").css("height"));
-			$("#toc").css("height",$("#map").css("height"));
-			$("body").css("height",window.innerHeight+"px");
-			$("")
-			$("#search").click(function(){
-			//console.log($("#select_class")[0].value);
-				$.get("php/hometownsum.php?class="+$("#select_class")[0].value,function(data,status){
-					var obj=eval("("+data+")");
-					for(var i=0;i<obj.length;i++){
-						provinces[i]=obj[i][0];
-					}
-					//alert("获取成功！");
-					alert(status);
-				});
-			});
-			});
-		
-var map;
-		var visible=[];
-		var layer=[];
-		
-		//dojo代码
-		require([
-		"dojo/dom","dojo/on",
-		"esri/map","esri/layers/ArcGISDynamicMapServiceLayer","esri/layers/FeatureLayer",
-		"esri/tasks/query", "esri/tasks/QueryTask","esri/symbols/SimpleFillSymbol","esri/InfoTemplate", "esri/geometry/Extent","dojo/_base/Color","esri/SpatialReference","esri/geometry/Point",
-		"esri/tasks/IdentifyTask","esri/tasks/IdentifyParameters",
-		"esri/request","dojo/domReady!"],
-		function(dom,on,Map, ArcGISDynamicMapServiceLayer,FeatureLayer,Query, QueryTask,SimpleFillSymbol,InfoTemplate,Extent,Color,SpatialReference,Point,IdentifyTask,IdentifyParameters,esriRequest){
-			//var startExtent=new Extent(70.866,17.462,136.586,59.656,new SpatialReference({ wkid:4326 }));
-			map = new Map("map");
-			//map.centerAndZoom(new Point(108.972,31.81,new SpatialReference({ wkid:4326 })),0.5);
-			layer = new ArcGISDynamicMapServiceLayer("http://localhost:6080/arcgis/rest/services/ChinaProvince/MapServer");
-			//layer.initialExtent=new Extent(70.866,17.462,136.586,59.656,new SpatialReference({ wkid:4326 }));
-            map.addLayer(layer);
-
-			var queryTask = new QueryTask("http://localhost:6080/arcgis/rest/services/ChinaProvince/MapServer/0");
-			  var query = new Query();
-			   query.returnGeometry = true;
-			    query.outFields=["Name"];
-				
-			on(dom.byId("paint"),"click",paintZhuantitu);
-			on(map,"load",initIdentify);
-			on(map,"click",doIdentify);
-			function initIdentify(){
-			//alert("aaa");
-				
-				identifyTask=new IdentifyTask("http://localhost:6080/arcgis/rest/services/ChinaProvince/MapServer");
-				identifyParams = new IdentifyParameters();
-				identifyParams.tolerance = 3;
-				//进行Identify的图层
-				identifyParams.layerIds=[0];
-				//进行Identify的图层为全部
-				identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
-			}
-			
-			function doIdentify(evt){
-			//alert(evt);
-			//Identify的geometry
-				identifyParams.geometry=evt.mapPoint;
-				//Identify范围
-			identifyParams.mapExtent = map.extent;
-			identifyTask.execute(identifyParams, function(idResults) { showIdentifyResults(idResults, evt); });
-			}
-		
-			function showIdentifyResults(idResults,evt){
-				province=idResults[0].value;
-				console.log(province);
-				var request = esriRequest({
-					url:"php/hometownsum.php?province="+province,
-					handleAs:"json"
-				});
-				
-				request.then(function(data){
-					console.log(data);
-				},function(error){
-					console.log("error:",error.message);
-				});
-				infoTemplate = new InfoTemplate("省份","${Name}");
-			}
-			function paintZhuantitu(){
-//console.log(provinces);
-			  map.graphics.clear();
-				for (var i =0;i<provinces.length;i++){
-				//console.log(provinces[i]);				
-				query.text=provinces[i];
-				//console.log(query.text);
-					//console.log(query);
-					//console.log(queryTask);
-					queryTask.execute(query,showResults);
-				}
-			}
-			
-			function showResults(results){
-			//console.log(results);
-				
-				//console.log(featureAttributes.Name);
-				 symbol = new SimpleFillSymbol();
-				 symbol.setStyle(SimpleFillSymbol.STYLE_SOLID);
-				  symbol.setColor(new Color([255,255,0,1]));
-				  var graphic = results.features[0];
-				  graphic.setSymbol(symbol);
-				  graphic.setInfoTemplate(infoTemplate);
-				  //alert("${Name}");
-				  map.graphics.add(graphic);
-				  
-			}
-			function loadLayerList(layers)
-			{
-			//console.log(layers);
-				var html="";
-				var infos=layers.layerInfos;
-				//console.log(infos);
-				//获取图层的信息
-				for(var i =0;i<infos.length;i++){
-					var info=infos[i];
-					if(info.defaultVisibility){
-						visible.push(info.id);
-					}
-					//输出图层列表的html
-					html=html+"<div><input id='"+info.id+"' name='layerList' class='listCss' type='checkbox' value='checkbox' "+( info.defaultVisibility?"checked":"")+"/>"+info.name+"</div>";
-					dom.byId("'"+info.id+"'").on("click",setLayerVisibility);
-				}
-				//设置可见图层
-				layer.setVisibleLayers(visible);
-				console.log(html);
-				//dom.byId("toc").innerHTML="aaaaaaaaaaaa";
-				dom.byId("toc").innerHTML=html;
-				
-			}
-			
-			function setLayerVisibility(){
-					var inputs= dojo.query(".listCss");
-					visible=[];
-					for(var i=0;i<inputs.length;i++){
-						if(inputs[i].checked){
-							visible.push(inputs[i].id);
-							}
-					}
-					layer.setVisibleLayers(visible);
-			}
-			
-			
-			});
-			</script>
-<style type="text/css">
-body,td,th {
-	font-size: 16px;
-}
-body {
-	background-color: #FFFFFF;
-	margin:0px;
-	padding:0px;
-	width:100%;
-	overflow:hidden;
-}
-</style>
-
-<script>
-
-</script>
+<script src="js/main.js"></script>
 </head>
 
 <body class="claro">
-<div dojotype="dijit.layout.BorderContainer"  design="headline" gutters="false" style="height: 100%; border:solid 3px silver;">
-    <div class="LOGO" >
-      <div id="title" style="position: absolute; top: 7px; left: 249px;">WebGIS测绘学子信息地图管理系统</div>
-      <input id="ownerName" type="text"  style="position:absolute; height:23px; width:200px; right:89px; top:70px;"/>
-	  <select name="select_class" id="select_class">
-		<option value="选择班级" selected="selected">选择班级</option>
-		<option value="s2015">测绘2015级</option>
-		<option value="s2012">测绘2012级</option>
-	  </select>
-      <button id="search"  style="position:absolute;  height:23px; right:20px;top:69px; z-index:3;border-radius:10px;" >获取生源地信息</button>
-	  <button id="paint" style="position:absolute;  height:23px; right:20px;top:99px; z-index:3;border-radius:10px;">绘制专题图</button>
+    <div class="LOGO">
+      <div id="title">WebGIS测绘学子信息地图管理系统</div>
+      <!--<input id="ownerName" type="text"/>-->
     </div>
-    <div dojotype="dijit.layout.SplitContainer" style="border:none; width:100%; height:100%" >
-      <div id="map" dojotype="dijit.layout.ContentPane" region="center" style="border:solid thin silver;
-overflow:hidden" >
-		<div id="Toolbar2" style="border: 1px; border-style:solid; margin-left:670px; border-color: #000000; height: 40px; width: 250px;">
-		<img src="image/basic_upload.png" width="39px" height="34" />
-        <img src="image/basic_geolocalize-05.png" width="39px" height="35"/>
-		<img src="image/basic_settings.png" width="39px" height="36"/>
-		<img src="image/sys_icon_zoom_in.png" width="32" height="32"/>
-		<img src="image/sys_icon_zoom_out.png" width="32" height="32/>
-		<img src="image/sys_icon_touch.png" width="32" height="32"/>
+    <div class="main">
+      <div id="map">
+		<div id="Toolbar2">
+			<img src="image/basic_upload.png" width="39px" height="34" />
+			<img src="image/basic_geolocalize-05.png" width="39px" height="35"/>
+			<img src="image/basic_settings.png" width="39px" height="36"/>
+			<img src="image/sys_icon_zoom_in.png" width="32" height="32"/>
+			<img src="image/sys_icon_zoom_out.png" width="32" height="32"/>
+			<img src="image/sys_icon_touch.png" width="32" height="32"/>
+		</div>
 	</div>
-	</div>
-	      <div id="AttributeTable"  design="sidebar" >
-        <table width="458" align="center"  id="grid" data-dojo-type="dojox/grid/DataGrid" data-dojo-id="grid" data-dojo-props="rowSelector:'20px',rowsPerPage:'5'">
-          <thead>
-            <tr>
-              <th width="66" field="name">Name</th>
-              <th width="103" field="type" >班级</th>
-              <th width="112" field="FID">籍贯</th>
-              <th width="137" field="FID">毕业信息</th>
-            </tr>
-          </thead>
-        </table>
-		
-      </div>
-      </div>
-	   
-	  <!--<div id="toc"></div>-->
-
-      
+		 <button id="paint" class="buttons">绘制专题图</button>
+		 <button id="showpiechart" class="buttons">男女生比例</button>
+		 <button id="showbarchart" class="buttons">人数统计</button>
+	 <div id="toc">
+		 <select name="select_class" id="select_class">
+			<option value="选择班级" selected="selected">选择班级</option>
+			<option value="s2015">测绘2015级</option>
+			<option value="s2012">测绘2012级</option>
+		  </select>
     </div>
-
-</div>
-
-
+	 <div id="chartTwo"></div>
+	 <div id="legendTwo"></div>
+	 </div>
 </body>
 </html>

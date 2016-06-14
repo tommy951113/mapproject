@@ -1,16 +1,16 @@
 <?php
 	include('ch_json_encode.php');
-	//echo $_GET['class'];
-	//var_dump($_GET['dd']);
-	
-	//$sql="SELECT hometown FROM ".$_GET['class']." group by hometown";
-	$sql="SELECT hometown,count(*) FROM ".$_GET['class']." group by hometown";
-	
-	$res=queryDatabase($sql);
 	$arr=array();
-	while($row=mysqli_fetch_array($res)){
-		$arr[]=$row;
+	for($i=2;$i<=5;$i++){
+		//循环查询s2012~s2015
+		$sql = "select gender,count(*) from s201".$i." group by gender";
+		$res=queryDatabase($sql);
+		while($row=mysqli_fetch_array($res,MYSQL_NUM)){
+			$arr[]=$row;
+		}
 	}
+			//print_r($arr);
+
 	$json_string=ch_json_encode($arr);
 	echo $json_string;
 	//echo $array;

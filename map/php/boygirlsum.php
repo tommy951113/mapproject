@@ -1,10 +1,7 @@
 <?php
 	include('ch_json_encode.php');
-	//echo $_GET['class'];
-	//var_dump($_GET['dd']);
-	
-	//$sql="SELECT hometown FROM ".$_GET['class']." group by hometown";
-	$sql="SELECT hometown,count(*) FROM ".$_GET['class']." group by hometown";
+	$class=$_GET['class'];
+	$sql="SELECT gender,count(*) AS pop from ".$class." group by gender";
 	
 	$res=queryDatabase($sql);
 	$arr=array();

@@ -151,7 +151,7 @@ $(document).ready(function() {
 			},function(data){
 				//alert(data);
 				if(data=="登录成功!"){
-					window.location.assign("../map");
+					window.location.assign("../map/map2.html");
 				}else{
 					alert(data);
 				}
